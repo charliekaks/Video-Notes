@@ -18,6 +18,9 @@ mongoose.connect("mongodb://localhost:27017/vnode-app", { useNewUrlParser: true 
 .catch(err =>{
   console.log(err)
 })
+require("./models/Note");
+const Notes = mongoose.model("Notes");
+
 const app = express();
 const expressHandleBars = require("express-handlebars");
 
@@ -63,10 +66,19 @@ app.use(function (req, res, next) {
   res.locals.messages = require('express-messages')(req, res);
   next();
 });
-  
+  // the index route
 app.get("/",(req, res)=>{
     res.render("index");
 });
+//ideas route
+app.get("/",(req, res)=>{
+    res.render("ideas");
+});
+// Add ideas route
+app.get("/",(req, res)=>{
+    res.render("add");
+});
+
 
 app.listen(3000, ()=>{
 
