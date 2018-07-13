@@ -16,4 +16,4 @@ const NoteSchema = new Schema({
     }
 });
 
-mongoose.model("Notes", NoteSchema);
+mongoose.model("notes", NoteSchema);
