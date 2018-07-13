@@ -1,0 +1,11 @@
+{{#each notes}}
+<div class="card mb-3">
+    <div class="card-body">
+        <h3 class="card-title">{{title}}</h3>
+            <p>{{details}}</p>
+            <a class="btn btn-dark btn-block" href="/edit/{{id}}">Edit</a>        
+    </div>
+</div>
+{{else}}
+
+{{/each}}
