@@ -11,7 +11,7 @@ const mongoose =require("mongoose");
 const expressValidator =require("express-validator");
 mongoose.Promise = global.Promise; 
 //connecting to mongoose
-mongoose.connect("mongodb://localhost:27017/vnode-app", { useNewUrlParser: true })
+mongoose.connect("mongodb://localhost:27017/node-app", { useNewUrlParser: true })
 .then(()=>{
   console.log("MongoDb Connected")
 })
@@ -19,7 +19,7 @@ mongoose.connect("mongodb://localhost:27017/vnode-app", { useNewUrlParser: true 
   console.log(err)
 })
 require("./models/Note");
-const Notes = mongoose.model("Notes");
+const Notes = mongoose.model("notes");
 
 const app = express();
 const expressHandleBars = require("express-handlebars");
@@ -71,12 +71,52 @@ app.get("/",(req, res)=>{
     res.render("index");
 });
 //ideas route
-app.get("/",(req, res)=>{
-    res.render("ideas");
+app.get("/ideas",(req, res)=>{
+    Notes.find({})
+      .sort({date:"desc"})
+      .then(notes =>{
+        res.render("ideas",{notes:notes})
+      });
+
 });
 // Add ideas route
-app.get("/",(req, res)=>{
+app.get("/add",(req, res)=>{
     res.render("add");
+});
+//Edit idea route
+app.get("/edit/:id",(req, res)=>{
+  Notes.findOne({
+    _id: req.params.id
+  }).then(notes =>(res.render("edit",{notes:notes})));
+
+});
+//handling the form to add ideas
+app.post("/ideas", (req, res)=>{
+  var errors = [];
+  if (!req.body.title) {
+    errors.push({text: "Please add a Title"})
+  }
+  if (!req.body.details) {
+    errors.push({text: "please add some details to the form"})
+  }
+  if(errors.length>0){
+    res.render("add",{
+      errors:errors,
+      title: req.body.title,
+      details: req.body.details
+    });
+  }else{
+    var newNote ={
+      title: req.body.title,
+      details: req.body.details
+    }
+    new Notes(newNote)
+      .save()
+      .then( notes =>{
+        res.redirect("/ideas")
+      })
+  }
+  
 });
 
 
