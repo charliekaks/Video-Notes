@@ -9,6 +9,7 @@ const flash =require("connect-flash");
 const mongodb =require("mongodb");
 const mongoose =require("mongoose");
 const expressValidator =require("express-validator");
+const methodOverride = require('method-override')
 mongoose.Promise = global.Promise; 
 //connecting to mongoose
 mongoose.connect("mongodb://localhost:27017/node-app", { useNewUrlParser: true })
@@ -33,6 +34,7 @@ const uploads = multer({dest:"./images"});
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(methodOverride('_method'))
 
 //handles sessions
 app.use(session({
@@ -89,6 +91,17 @@ app.get("/edit/:id",(req, res)=>{
     _id: req.params.id
   }).then(notes =>(res.render("edit",{notes:notes})));
 
+});
+//the editing process route
+app.put("/edit/:id", (req,res)=>{
+  Notes.findOne({
+    _id: req.params.id  
+  }).then(notes =>{
+    notes.title = req.body.title;
+    notes.details = req.body.details;
+    notes.save()
+      .then(notes => {res.redirect("/ideas")})
+  })
 });
 //handling the form to add ideas
 app.post("/ideas", (req, res)=>{
