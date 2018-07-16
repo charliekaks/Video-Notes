@@ -10,6 +10,8 @@ const mongodb =require("mongodb");
 const mongoose =require("mongoose");
 const expressValidator =require("express-validator");
 const methodOverride = require('method-override')
+
+
 mongoose.Promise = global.Promise; 
 //connecting to mongoose
 mongoose.connect("mongodb://localhost:27017/node-app", { useNewUrlParser: true })
@@ -19,8 +21,7 @@ mongoose.connect("mongodb://localhost:27017/node-app", { useNewUrlParser: true }
 .catch(err =>{
   console.log(err)
 })
-require("./models/Note");
-const Notes = mongoose.model("notes");
+
 
 const app = express();
 const expressHandleBars = require("express-handlebars");
@@ -72,78 +73,12 @@ app.use(function (req, res, next) {
   res.locals.error = req.flash("error");
   next();
 });
-  // the index route
-app.get("/",(req, res)=>{
-    Notes.find({})
-      .sort({date:"desc"})
-      .then(notes =>{
-        res.render("index",{notes:notes})
-      });
 
-});
-// Add ideas route
-app.get("/add",(req, res)=>{
-    res.render("add");
-});
-//Edit idea route
-app.get("/edit/:id",(req, res)=>{
-  Notes.findOne({
-    _id: req.params.id
-  }).then(notes =>(res.render("edit",{notes:notes})));
-
-});
-//the editing process route
-app.put("/edit/:id", (req,res)=>{
-  Notes.findOne({
-    _id: req.params.id  
-  }).then(notes =>{
-    notes.title = req.body.title;
-    notes.details = req.body.details;
-    notes.save()
-      .then(notes => {
-        req.flash("success_msg","Your notes have been successfully edited")
-        res.redirect("/")
-      });
-  });
-});
-//the delete process route
-app.delete("/edit/:id", (req,res)=>{
-  Notes.remove({_id:req.params.id
-  }).then(()=>{
-    req.flash("success_msg","Video notes were successfully deleted");
-    res.redirect("/");
-  })
-});
-//handling the form to add ideas
-app.post("/", (req, res)=>{
-  var errors = [];
-  if (!req.body.title) {
-    errors.push({text: "Please add a Title"})
-  }
-  if (!req.body.details) {
-    errors.push({text: "please add some details to the form"})
-  }
-  if(errors.length>0){
-    res.render("add",{
-      errors:errors,
-      title: req.body.title,
-      details: req.body.details
-    });
-  }else{
-    var newNote ={
-      title: req.body.title,
-      details: req.body.details
-    }
-    new Notes(newNote)
-      .save()
-      .then( notes =>{
-        req.flash("success_msg","Successfully added an Idea")
-        res.redirect("/")
-      })
-  }
-  
-});
-
+//Load the routes
+const router = require("./routes/router");
+app.use("/",router)
+const users = require("./routes/users");
+app.use("/users",users)
 
 app.listen(3000, ()=>{
 
