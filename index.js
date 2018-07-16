@@ -42,6 +42,7 @@ app.use(session({
     saveUninitialized : true,
     resave: true
 }))
+  
 //passport
 app.use(passport.initialize());
 app.use(passport.session());
@@ -62,22 +63,21 @@ app.use(expressValidator({
       };
     }
   }));
+  app.use(flash());
   // express messages middleware
 app.use(require('connect-flash')());
 app.use(function (req, res, next) {
-  res.locals.messages = require('express-messages')(req, res);
+  res.locals.success_msg = req.flash("success_msg");
+  res.locals.error_msg = req.flash("error_msg");
+  res.locals.error = req.flash("error");
   next();
 });
   // the index route
 app.get("/",(req, res)=>{
-    res.render("index");
-});
-//ideas route
-app.get("/ideas",(req, res)=>{
     Notes.find({})
       .sort({date:"desc"})
       .then(notes =>{
-        res.render("ideas",{notes:notes})
+        res.render("index",{notes:notes})
       });
 
 });
@@ -100,11 +100,22 @@ app.put("/edit/:id", (req,res)=>{
     notes.title = req.body.title;
     notes.details = req.body.details;
     notes.save()
-      .then(notes => {res.redirect("/ideas")})
+      .then(notes => {
+        req.flash("success_msg","Your notes have been successfully edited")
+        res.redirect("/")
+      });
+  });
+});
+//the delete process route
+app.delete("/edit/:id", (req,res)=>{
+  Notes.remove({_id:req.params.id
+  }).then(()=>{
+    req.flash("success_msg","Video notes were successfully deleted");
+    res.redirect("/");
   })
 });
 //handling the form to add ideas
-app.post("/ideas", (req, res)=>{
+app.post("/", (req, res)=>{
   var errors = [];
   if (!req.body.title) {
     errors.push({text: "Please add a Title"})
@@ -126,7 +137,8 @@ app.post("/ideas", (req, res)=>{
     new Notes(newNote)
       .save()
       .then( notes =>{
-        res.redirect("/ideas")
+        req.flash("success_msg","Successfully added an Idea")
+        res.redirect("/")
       })
   }
   
