@@ -19,15 +19,16 @@
         <div class="collapse navbar-collapse justify-content-end" id="navbarCollapse">
         <ul class="navbar-nav">
             <li><a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a></li>
-            <li><a class="nav-item nav-link" href="users/register">Register</a></li>
-            <li><a class="nav-item nav-link" href="users/login">Login</a></li>
+            <li><a class="nav-item nav-link" href="/users/register">Register</a></li>
+            <li><a class="nav-item nav-link" href="/users/login">Login</a></li>
             <li><a class="nav-item nav-link" href="add">Add Ideas</a></li>
         </ul>
         </div>
         </div>
-    </div>
+    </div> 
 </nav> 
 {{> _messages}}
+{{> _errors}}
 <div class="container-fluid">
  {{{body}}}
 </div>
