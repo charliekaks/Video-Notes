@@ -3,10 +3,11 @@ const router = express.Router();
 const mongoose = require("mongoose")
 require("../models/Note");
 const Notes = mongoose.model("notes");
+const {ensureAuthenticated} = require('../helpers/auth');
 
   // the index route
-  router.get("/",(req, res)=>{
-    Notes.find({})
+  router.get("/", ensureAuthenticated, (req, res)=>{
+    Notes.find({user: req.user.id})
       .sort({date:"desc"})
       .then(notes =>{
         res.render("index",{notes:notes})
@@ -14,18 +15,26 @@ const Notes = mongoose.model("notes");
 
 });
 // Add ideas route
-router.get("/add",(req, res)=>{
+router.get("/add",ensureAuthenticated,  (req, res)=>{
     res.render("add");
 });
 //Edit idea route
-router.get("/edit/:id",(req, res)=>{
+router.get("/edit/:id",ensureAuthenticated,(req, res)=>{
   Notes.findOne({
     _id: req.params.id
-  }).then(notes =>(res.render("edit",{notes:notes})));
+  }).then(notes =>{
+    if (notes.user != req.user.id) {
+      req.flash('error_msg','Not Authorized');
+      res.redirect('/')
+    } else {
+      res.render("edit",{notes:notes})
+    }
+    }
+  );
 
 });
 //the editing process route
-router.put("/edit/:id", (req,res)=>{
+router.put("/edit/:id", ensureAuthenticated,(req,res)=>{
   Notes.findOne({
     _id: req.params.id  
   }).then(notes =>{
@@ -39,7 +48,7 @@ router.put("/edit/:id", (req,res)=>{
   });
 });
 //the delete process route
-router.delete("/edit/:id", (req,res)=>{
+router.delete("/edit/:id",ensureAuthenticated, (req,res)=>{
   Notes.remove({_id:req.params.id
   }).then(()=>{
     req.flash("success_msg","Video notes were successfully deleted");
@@ -47,7 +56,7 @@ router.delete("/edit/:id", (req,res)=>{
   })
 });
 //handling the form to add ideas
-router.post("/", (req, res)=>{
+router.post("/", ensureAuthenticated,(req, res)=>{
   var errors = [];
   if (!req.body.title) {
     errors.push({text: "Please add a Title"})
@@ -64,7 +73,8 @@ router.post("/", (req, res)=>{
   }else{
     var newNote ={
       title: req.body.title,
-      details: req.body.details
+      details: req.body.details,
+      user:req.user.id
     }
     new Notes(newNote)
       .save()

@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const passport = require("passport");
 
 require("../models/Users");
 const Users = mongoose.model("users");
@@ -15,6 +16,7 @@ router.get("/login",(req, res)=>{
 router.get("/register",(req, res)=>{
     res.render("users/register");
 });
+// the register route form functionality
 router.post("/register", (req, res)=>{
     var errors = [];
     if(req.body.password!=req.body.password2){
@@ -63,4 +65,19 @@ router.post("/register", (req, res)=>{
 
     }
 });
+
+// login form with login functionality
+router.post('/login', (req, res, next)=>{
+    passport.authenticate('local',{
+        successRedirect: '/',
+        failureRedirect:'/users/login',
+        failureFlash: true
+    })(req, res, next);
+});
+
+router.get('/logout',(req,res)=>{
+    req.logout();
+    req.flash('success_msg','you have logout' )
+    res.redirect('/users/login')
+})
 module.exports = router;
